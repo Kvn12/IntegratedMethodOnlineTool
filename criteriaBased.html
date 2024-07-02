@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Integrated Method</title>
+<link rel="stylesheet" href="stylesIndex.css" />
+</head>
+<body>
+    <h1>Integrated Method</h1>
+    <p>This is a tool to calculate the data value from your Industry 4.0.</p>
+    <h2>Criteria-Based Evaluation:</h2>
+    <form id="productivityForm" method="get" action="/repositas/Scientific-Initiation/webVersio/costBased.html">    
+        <fieldset>
+            <legend>Data Availability</legend>
+            <label for="availability-loss">Enter an estimate of losses due to lack of IT infrastructure: <input id="availability-loss" name="availability-loss" type="number" min="0" max="1" step="0.01" placeholder="0.00 - 1.00" required/> </label>
+        </fieldset>
+        <fieldset>
+            <legend>Data Quality</legend>
+            <label for="slowness-loss">Enter an estimate of losses due to too slow data collection: <input id="slowness-loss" name="slowness-loss" type="number" min="0" max="1" step="0.01" placeholder="0.00 - 1.00" required/> </label>
+            <label for="completeness-loss">Enter an estimate of losses due to incompleted or incorrected data: <input id="completeness-loss" name="completeness-loss" type="number" min="0" max="1" step="0.01" placeholder="0.00 - 1.00" required/> </label>
+        </fieldset>
+        <fieldset>
+            <legend>DSS Performance</legend>
+            <label for="algorithms-loss">Enter an estimate of losses due to poor algorithms: <input id="algorithms-loss" name="algorithms-loss" type="number" min="0" max="1" step="0.01" placeholder="0.00 - 1.00" required/> </label>
+            <label for="integration-loss">Enter an estimate of losses due to algorithms not performing on time, poor data integration: <input id="integration-loss" name="integration-loss" type="number" min="0" max="1" step="0.01" placeholder="0.00 - 1.00" required/> </label>
+            <label for="contextualization-loss">Enter an estimate of losses due to no summary indicators, high granularity of the data, poor contextualization: <input id="contextualization-loss" name="contextualization-loss" type="number" min="0" max="1" step="0.01" placeholder="0.00 - 1.00" required/> </label>
+            <label for="management-loss">Enter an estimate of losses due to poor management: <input id="management-loss" name="management-loss" type="number" min="0" max="1" step="0.01" placeholder="0.00 - 1.00" required/> </label>
+        </fieldset>
+        <input type="submit" value="Submit"/>
+        <input type="button" onclick="voltar()" value="Go Back"/>
+    </form>
+    <script>
+        // Armazena os dados do form no localStorage
+        document.getElementById('productivityForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const formObj = Object.fromEntries(formData.entries());
+            localStorage.setItem('productivityFormData', JSON.stringify(formObj));
+            window.location.href = 'costBased.html'; // Redireciona para a próxima tela
+        });
+
+        function voltar() {
+            window.history.back();
+        }
+    </script>
+</body>
+</html>

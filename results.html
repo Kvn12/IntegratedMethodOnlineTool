@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Integrated Method</title>
+    <link rel="stylesheet" href="stylesResults.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .chart-container {
+            width: 100%;
+            max-width: 600px; /* Define a largura máxima para os gráficos */
+            margin: 0 auto;
+        }
+        canvas {
+            width: 100% !important;
+            height: auto !important;
+        }
+    </style>
+</head>
+<body>
+    <h1>Results</h1>
+    <div id="resultDivs">
+        <div id="resultIndex" class="centered-div"></div>
+        <div id="resultCost" class="centered-div"></div>
+        <div id="resultCostByte" class="centered-div"></div>
+    </div>
+    <div id="resultsContainer">
+        <div style="display: flex; justify-content: space-between; flex-wrap: wrap;">
+            <div class="chart-container">
+                <canvas id="productionIndexChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="costPerByteChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <button id="downloadCsvButton">Download Results</button>
+    <input type="submit" onclick="voltar()" value="Home"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
+    <script>
+        function getParams(data) {
+            if(data == null){
+                const productivityFormData = JSON.parse(localStorage.getItem('productivityFormData'));
+                const costFormData = JSON.parse(localStorage.getItem('costFormData'));
+
+                return {
+                    productivity: {
+                        availabilityLoss: productivityFormData['availability-loss'],
+                        slownessLoss: productivityFormData['slowness-loss'],
+                        completenessLoss: productivityFormData['completeness-loss'],
+                        algorithmsLoss: productivityFormData['algorithms-loss'],
+                        integrationLoss: productivityFormData['integration-loss'],
+                        contextualizationLoss: productivityFormData['contextualization-loss'],
+                        managementLoss: productivityFormData['management-loss']
+                    }, 
+                    cost: {
+                        sizeDatasetInput: costFormData['size-dataset'],
+                        costCollectingInput: costFormData['cost-collecting'],
+                        costStoringInput: costFormData['cost-storing'],
+                        costPreprocessingInput: costFormData['cost-preprocessing'],
+                        costMaintainingInput: costFormData['cost-maintaining']
+                    }           
+                };
+            }
+            else{
+                return {
+                    productivity: {
+                        availabilityLoss: data['availabilityLoss'],
+                        slownessLoss: data['slownessLoss'],
+                        completenessLoss: data['completenessLoss'],
+                        algorithmsLoss: data['algorithmsLoss'],
+                        integrationLoss: data['integrationLoss'],
+                        contextualizationLoss: data['contextualizationLoss'],
+                        managementLoss: data['managementLoss']
+                    }, 
+                    cost: {
+                        sizeDatasetInput: data['sizeDatasetInput'],
+                        costCollectingInput: data['costCollectingInput'],
+                        costStoringInput: data['costStoringInput'],
+                        costPreprocessingInput: data['costPreprocessingInput'],
+                        costMaintainingInput: data['costMaintainingInput']
+                    }           
+                };
+            }
+        }
+
+        function calcularResultado(data) {
+            let prodParams;
+            let costParams;
+            if(data == null){
+                const params = getParams();
+                prodParams = params.productivity;
+                costParams = params.cost;
+            }
+            else{
+                const params = getParams(data);
+                prodParams = params.productivity;
+                costParams = params.cost;
+            }
+
+            var avalability = (1-parseFloat(prodParams.availabilityLoss));
+            var quality = (1-parseFloat(prodParams.slownessLoss)*(1-parseFloat(prodParams.completenessLoss)));
+            var productivity = (1-parseFloat(prodParams.algorithmsLoss)*(1-parseFloat(prodParams.integrationLoss))*(1-parseFloat(prodParams.contextualizationLoss))*(1-parseFloat(prodParams.managementLoss)));
+            
+            var dataProductivityIndex = avalability * quality * productivity;  
+
+            var totalCost = parseFloat(costParams.costCollectingInput) + parseFloat(costParams.costStoringInput) + parseFloat(costParams.costPreprocessingInput) + parseFloat(costParams.costMaintainingInput);  
+            var totalCostPerByte = totalCost/parseFloat(costParams.sizeDatasetInput);
+
+            if(data == null){
+                document.getElementById('resultIndex').innerText = `The Data Value Productivity Index is: ${dataProductivityIndex.toFixed(2)}`;
+                document.getElementById('resultCost').innerText = `The Total Cost of the Data is US$ ${totalCost.toFixed(2)}`;
+                document.getElementById('resultCostByte').innerText = `The Total Cost of the Data per byte is US$ ${totalCostPerByte.toFixed(2)}/byte`;
+            }
+            else{
+                return {dataProductivityIndex, totalCost, totalCostPerByte};
+            }
+        }
+
+        function downloadManualResults() {
+            // Função para extrair o valor numérico de um texto
+            function extractNumber(text) {
+                const match = text.match(/[\d.]+/);
+                return match ? match[0] : '';
+            }
+
+            // Obter os textos das divs
+            const resultIndexText = document.getElementById('resultIndex').innerText;
+            const resultCostText = document.getElementById('resultCost').innerText;
+            const resultCostByteText = document.getElementById('resultCostByte').innerText;
+
+            // Extrair os valores numéricos
+            const resultIndex = extractNumber(resultIndexText);
+            const resultCost = extractNumber(resultCostText);
+            const resultCostByte = extractNumber(resultCostByteText);
+
+            // Adicione aqui os dados do formulário, exemplo:
+            const formData = getParams();
+            const prodParams = formData.productivity;
+            const costParams = formData.cost;
+
+            // Cria as linhas de cabeçalho e dados
+            let headers = [];
+            let values = [];
+
+            // Adicionar os dados de produtividade ao CSV
+            for (const [key, value] of Object.entries(prodParams)) {
+                headers.push(key);
+                values.push(value);
+            }
+
+            // Adicionar os dados de custo ao CSV
+            for (const [key, value] of Object.entries(costParams)) {
+                headers.push(key);
+                values.push(value);
+            }
+
+            // Adicionar os resultados ao CSV
+            headers.push('Index', 'Cost', 'Cost per Byte');
+            values.push(resultIndex, resultCost, resultCostByte);
+
+            // Cria o conteúdo CSV
+            let csvContent = 'data:text/csv;charset=utf-8,';
+            csvContent += headers.join(',') + '\n'; // Adicionar cabeçalho
+            csvContent += values.join(',') + '\n';  // Adicionar valores
+
+            // Cria o link de download
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement('a');
+            link.setAttribute('href', encodedUri);
+            link.setAttribute('download', 'results.csv');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function processFile(data) {
+            const workbook = XLSX.read(data, { type: 'array' });
+            const sheetName = workbook.SheetNames[0];
+            const worksheet = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
+
+            const headers = worksheet[0];
+            const rows = worksheet.slice(1);
+
+            const validRows = rows.filter(row => row.some(cell => cell !== undefined && cell !== null && cell !== ''));
+
+            const results = validRows.map(row => {
+                const rowData = {};
+                headers.forEach((header, index) => {
+                    rowData[header] = row[index];
+                });
+
+                const calcResults = calcularResultado(rowData);
+                return { ...rowData, ...calcResults };
+            });
+
+            const csvContent = [
+                [...headers, 'Indice Resultado', 'Custo Resultado', 'Custo por Byte Resultado'],
+                ...results.map(row => [...headers.map(header => row[header]), row.dataProductivityIndex.toFixed(2), row.totalCost, row.totalCostPerByte])
+            ]
+            .map(e => e.join(','))
+            .join('\n');
+
+            return csvContent;
+        }
+
+        function downloadExcelResults() {
+            const storedData = JSON.parse(localStorage.getItem('uploadedFile'));
+            if (!storedData) {
+                alert('Nenhum arquivo foi carregado.');
+                return;
+            }
+
+            const data = new Uint8Array(storedData);
+            const csvContent = processFile(data);
+
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'results.csv';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            // Exibir gráficos
+            displayCharts(csvContent);
+        }
+
+        function getQueryStringParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        function displayCharts(csvContent) {
+            const lines = csvContent.split('\n');
+            const headers = lines[0].split(',');
+            const rows = lines.slice(1).map(line => line.split(','));
+
+            const productionIndexData = rows.map(row => parseFloat(row[headers.indexOf('Indice Resultado')]));
+            const costPerByteData = rows.map(row => parseFloat(row[headers.indexOf('Custo por Byte Resultado')]));
+
+            const ctx1 = document.getElementById('productionIndexChart').getContext('2d');
+            new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: rows.map((_, i) => `${i + 1}`),
+                    datasets: [{
+                        label: 'Production Index',
+                        data: productionIndexData,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1,
+                        fill: false
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            const ctx2 = document.getElementById('costPerByteChart').getContext('2d');
+            new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: rows.map((_, i) => `${i + 1}`),
+                    datasets: [{
+                        label: 'Cost per Byte',
+                        data: costPerByteData,
+                        borderColor: 'rgba(153, 102, 255, 1)',
+                        borderWidth: 1,
+                        fill: false
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function voltar() {
+            window.location.href = "index.html"
+        }
+
+        window.onload = function() {
+            const source = getQueryStringParameter('source');
+            if (source === 'manual') {
+                calcularResultado();
+            } else if (source === 'excel') {
+                document.getElementById('resultDivs').style.display = 'none';
+                const storedData = JSON.parse(localStorage.getItem('uploadedFile'));
+                if (storedData) {
+                    const data = new Uint8Array(storedData);
+                    const csvContent = processFile(data);
+                    displayCharts(csvContent);
+                }
+            }
+        }
+
+        // Adiciona o evento de clique ao botão de download
+        document.getElementById('downloadCsvButton').addEventListener('click', function() {
+            const source = getQueryStringParameter('source');
+
+            if (source === 'manual') {
+                return downloadManualResults();
+            } else if (source === 'excel') {
+                return downloadExcelResults();
+            }
+        });
+    </script>
+</body>
+</html>
