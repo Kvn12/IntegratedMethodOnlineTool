@@ -34,7 +34,7 @@
             </div>
         </div>
     </div>
-    <button id="downloadCsvButton">Download Results</button>
+    <button id="downloadExcelButton">Download Results</button>
     <input type="submit" onclick="voltar()" value="Home"/>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
     <script>
@@ -118,61 +118,57 @@
         }
 
         function downloadManualResults() {
-            // Função para extrair o valor numérico de um texto
-            function extractNumber(text) {
-                const match = text.match(/[\d.]+/);
-                return match ? match[0] : '';
-            }
-
-            // Obter os textos das divs
-            const resultIndexText = document.getElementById('resultIndex').innerText;
-            const resultCostText = document.getElementById('resultCost').innerText;
-            const resultCostByteText = document.getElementById('resultCostByte').innerText;
-
-            // Extrair os valores numéricos
-            const resultIndex = extractNumber(resultIndexText);
-            const resultCost = extractNumber(resultCostText);
-            const resultCostByte = extractNumber(resultCostByteText);
-
-            // Adicione aqui os dados do formulário, exemplo:
-            const formData = getParams();
-            const prodParams = formData.productivity;
-            const costParams = formData.cost;
-
-            // Cria as linhas de cabeçalho e dados
-            let headers = [];
-            let values = [];
-
-            // Adicionar os dados de produtividade ao CSV
-            for (const [key, value] of Object.entries(prodParams)) {
-                headers.push(key);
-                values.push(value);
-            }
-
-            // Adicionar os dados de custo ao CSV
-            for (const [key, value] of Object.entries(costParams)) {
-                headers.push(key);
-                values.push(value);
-            }
-
-            // Adicionar os resultados ao CSV
-            headers.push('Index', 'Cost', 'Cost per Byte');
-            values.push(resultIndex, resultCost, resultCostByte);
-
-            // Cria o conteúdo CSV
-            let csvContent = 'data:text/csv;charset=utf-8,';
-            csvContent += headers.join(',') + '\n'; // Adicionar cabeçalho
-            csvContent += values.join(',') + '\n';  // Adicionar valores
-
-            // Cria o link de download
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement('a');
-            link.setAttribute('href', encodedUri);
-            link.setAttribute('download', 'results.csv');
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+        // Função para extrair o valor numérico de um texto
+        function extractNumber(text) {
+            const match = text.match(/[\d.]+/);
+            return match ? match[0] : '';
         }
+
+        // Obter os textos das divs
+        const resultIndexText = document.getElementById('resultIndex').innerText;
+        const resultCostText = document.getElementById('resultCost').innerText;
+        const resultCostByteText = document.getElementById('resultCostByte').innerText;
+
+        // Extrair os valores numéricos
+        const resultIndex = extractNumber(resultIndexText);
+        const resultCost = extractNumber(resultCostText);
+        const resultCostByte = extractNumber(resultCostByteText);
+
+        // Adicione aqui os dados do formulário, exemplo:
+        const formData = getParams();
+        const prodParams = formData.productivity;
+        const costParams = formData.cost;
+
+        // Criar arrays para cabeçalhos e valores
+        let headers = [];
+        let values = [];
+
+        // Adicionar os dados de produtividade ao arrays
+        for (const [key, value] of Object.entries(prodParams)) {
+            headers.push(key);
+            values.push(value);
+        }
+
+        // Adicionar os dados de custo ao arrays
+        for (const [key, value] of Object.entries(costParams)) {
+            headers.push(key);
+            values.push(value);
+        }
+
+        // Adicionar os resultados aos arrays
+        headers.push('Index', 'Cost', 'Cost per Byte');
+        values.push(resultIndex, resultCost, resultCostByte);
+
+        // Criar um workbook e uma planilha
+        const wb = XLSX.utils.book_new();
+        const ws_data = [headers, values]; // Primeiro linha de cabeçalhos, segunda linha de valores
+        const ws = XLSX.utils.aoa_to_sheet(ws_data);
+        XLSX.utils.book_append_sheet(wb, ws, 'Results');
+
+        // Download do arquivo Excel
+        XLSX.writeFile(wb, 'results.xlsx');
+    }
+
 
         function processFile(data) {
             const workbook = XLSX.read(data, { type: 'array' });
@@ -194,14 +190,7 @@
                 return { ...rowData, ...calcResults };
             });
 
-            const csvContent = [
-                [...headers, 'Indice Resultado', 'Custo Resultado', 'Custo por Byte Resultado'],
-                ...results.map(row => [...headers.map(header => row[header]), row.dataProductivityIndex.toFixed(2), row.totalCost, row.totalCostPerByte])
-            ]
-            .map(e => e.join(','))
-            .join('\n');
-
-            return csvContent;
+            return results;
         }
 
         function downloadExcelResults() {
@@ -212,20 +201,22 @@
             }
 
             const data = new Uint8Array(storedData);
-            const csvContent = processFile(data);
+            const results = processFile(data);
 
-            const blob = new Blob([csvContent], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'results.csv';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
+            const wb = XLSX.utils.book_new();
+            const ws_data = [];
 
-            // Exibir gráficos
-            displayCharts(csvContent);
+            if (results.length > 0) {
+                const headers = Object.keys(results[0]);
+                ws_data.push(headers);
+                results.forEach(row => {
+                    ws_data.push(headers.map(header => row[header]));
+                });
+            }
+
+            const ws = XLSX.utils.aoa_to_sheet(ws_data);
+            XLSX.utils.book_append_sheet(wb, ws, 'Results');
+            XLSX.writeFile(wb, 'results.xlsx');
         }
 
         function getQueryStringParameter(name) {
@@ -233,19 +224,15 @@
             return urlParams.get(name);
         }
 
-        function displayCharts(csvContent) {
-            const lines = csvContent.split('\n');
-            const headers = lines[0].split(',');
-            const rows = lines.slice(1).map(line => line.split(','));
-
-            const productionIndexData = rows.map(row => parseFloat(row[headers.indexOf('Indice Resultado')]));
-            const costPerByteData = rows.map(row => parseFloat(row[headers.indexOf('Custo por Byte Resultado')]));
+        function displayCharts(results) {
+            const productionIndexData = results.map(row => parseFloat(row['dataProductivityIndex']));
+            const costPerByteData = results.map(row => parseFloat(row['totalCostPerByte']));
 
             const ctx1 = document.getElementById('productionIndexChart').getContext('2d');
             new Chart(ctx1, {
                 type: 'line',
                 data: {
-                    labels: rows.map((_, i) => `${i + 1}`),
+                    labels: results.map((_, i) => `${i + 1}`),
                     datasets: [{
                         label: 'Production Index',
                         data: productionIndexData,
@@ -267,7 +254,7 @@
             new Chart(ctx2, {
                 type: 'line',
                 data: {
-                    labels: rows.map((_, i) => `${i + 1}`),
+                    labels: results.map((_, i) => `${i + 1}`),
                     datasets: [{
                         label: 'Cost per Byte',
                         data: costPerByteData,
@@ -299,14 +286,14 @@
                 const storedData = JSON.parse(localStorage.getItem('uploadedFile'));
                 if (storedData) {
                     const data = new Uint8Array(storedData);
-                    const csvContent = processFile(data);
-                    displayCharts(csvContent);
+                    const results = processFile(data);
+                    displayCharts(results);
                 }
             }
         }
 
         // Adiciona o evento de clique ao botão de download
-        document.getElementById('downloadCsvButton').addEventListener('click', function() {
+        document.getElementById('downloadExcelButton').addEventListener('click', function() {
             const source = getQueryStringParameter('source');
 
             if (source === 'manual') {
