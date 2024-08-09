@@ -32,6 +32,9 @@
             <div class="chart-container">
                 <canvas id="costPerByteChart"></canvas>
             </div>
+            <div class="chart-container">
+                <canvas id="costVsProductivityChart"></canvas>
+            </div>
         </div>
     </div>
     <button id="downloadExcelButton">Download Results</button>
@@ -109,8 +112,8 @@
 
             if(data == null){
                 document.getElementById('resultIndex').innerText = `The Data Value Productivity Index is: ${dataProductivityIndex.toFixed(2)}`;
-                document.getElementById('resultCost').innerText = `The Total Cost of the Data is US$ ${totalCost.toFixed(2)}`;
-                document.getElementById('resultCostByte').innerText = `The Total Cost of the Data per byte is US$ ${totalCostPerByte.toFixed(2)}/byte`;
+                document.getElementById('resultCost').innerText = `The Total Cost of the Data is R$ ${totalCost.toFixed(2)}`;
+                document.getElementById('resultCostByte').innerText = `The Total Cost of the Data per byte is R$ ${totalCostPerByte.toFixed(2)}/byte`;
             }
             else{
                 return {dataProductivityIndex, totalCost, totalCostPerByte};
@@ -227,6 +230,7 @@
         function displayCharts(results) {
             const productionIndexData = results.map(row => parseFloat(row['dataProductivityIndex']));
             const costPerByteData = results.map(row => parseFloat(row['totalCostPerByte']));
+            const totalCostData = results.map(row => parseFloat(row['totalCost']));
 
             const ctx1 = document.getElementById('productionIndexChart').getContext('2d');
             new Chart(ctx1, {
@@ -243,8 +247,18 @@
                 },
                 options: {
                     scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Entry'
+                            }
+                        },
                         y: {
-                            beginAtZero: true
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Productivity Index'
+                            }
                         }
                     }
                 }
@@ -265,8 +279,50 @@
                 },
                 options: {
                     scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Entry'
+                            }
+                        },
                         y: {
-                            beginAtZero: true
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Cost per Byte (R$)'
+                            }
+                        }
+                    }
+                }
+            });
+
+            const ctx3 = document.getElementById('costVsProductivityChart').getContext('2d');
+            new Chart(ctx3, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Cost vs Productivity',
+                        data: results.map(row => ({ x: parseFloat(row['totalCostPerByte']), y: parseFloat(row['dataProductivityIndex']) })),
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1,
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Cost per byte (R$)'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Productivity Index'
+                            }
                         }
                     }
                 }
