@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Integrated Method</title>
+<link rel="stylesheet" href="stylesIndex.css" />
+</head>
+<body>
+    <h1>Integrated Method</h1>
+    <p>This is a tool to calculate the data value from your Industry 4.0.</p>
+    <h2>To use it, first choose the way to calculate:</h2>
+    <form id="initialForm" method="get">
+        <button type="button" id="manualDataButton">Fill in the data manually</button>
+        <button type="button" id="uploadDataButton">Upload data file</button>
+    </form>
+    <script>
+        document.getElementById('manualDataButton').addEventListener('click', function() {
+            window.location.href = 'criteriaBased.html'; // Redireciona para a tela de dados manuais
+        });
+
+        document.getElementById('uploadDataButton').addEventListener('click', function() {
+            window.location.href = 'xlsxEntry.html'; // Redireciona para a tela de upload de arquivo
+        });
+    </script>
+</body>
+</html>
