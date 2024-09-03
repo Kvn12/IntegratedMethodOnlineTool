@@ -15,7 +15,7 @@
             <label for="size-dataset">Enter the total size of datasets (bytes): <input id="size-dataset" name="size-dataset" type="number" min="1" placeholder="≥ 1" required/> </label>
         </fieldset>
         <fieldset>
-            <legend>Costs (US$/month)</legend>
+            <legend>Costs (R$/month)</legend>
             <label for="cost-collecting">Enter the cost for collecting the data: <input id="cost-collecting" name="cost-collecting" type="number" min="0" placeholder="≥ 0" required/> </label>
             <label for="cost-storing">Enter the cost for storing the data: <input id="cost-storing" name="cost-storing" type="number" min="0" placeholder="≥ 0" required/> </label>
             <label for="cost-preprocessing">Enter the cost for pre-processing the data: <input id="cost-preprocessing" name="cost-preprocessing" type="number" min="0" placeholder="≥ 0" required/> </label>
@@ -24,20 +24,6 @@
         <input type="submit" value="Submit"/>
         <input type="button" onclick="voltar()" value="Go Back"/>
     </form>
-
-    <script>
-        // Armazena os dados do form no localStorage
-        document.getElementById('costForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            const formData = new FormData(event.target);
-            const formObj = Object.fromEntries(formData.entries());
-            localStorage.setItem('costFormData', JSON.stringify(formObj));
-            window.location.href = 'results.html?source=manual'; // Redireciona para a tela de resultados
-        });
-
-        function voltar() {
-            window.history.back();
-        }
-    </script>
+    <script src="js/costBasedjs.js"></script>
 </body>
 </html>
