@@ -59,9 +59,9 @@ function calcularResultado(data) {
     }
 
     var avalability = (1-parseFloat(prodParams.availabilityLoss));
-    var quality = (1-parseFloat(prodParams.slownessLoss)*(1-parseFloat(prodParams.completenessLoss)));
-    var productivity = (1-parseFloat(prodParams.algorithmsLoss)*(1-parseFloat(prodParams.integrationLoss))*(1-parseFloat(prodParams.contextualizationLoss))*(1-parseFloat(prodParams.managementLoss)));
-    
+    var quality = (1-parseFloat(prodParams.slownessLoss))*(1-parseFloat(prodParams.completenessLoss));
+    var productivity = (1-parseFloat(prodParams.algorithmsLoss))*(1-parseFloat(prodParams.integrationLoss))*(1-parseFloat(prodParams.contextualizationLoss))*(1-parseFloat(prodParams.managementLoss));
+
     var dataProductivityIndex = avalability * quality * productivity;  
 
     var totalCost = parseFloat(costParams.costCollectingInput) + parseFloat(costParams.costStoringInput) + parseFloat(costParams.costPreprocessingInput) + parseFloat(costParams.costMaintainingInput);  
@@ -197,24 +197,34 @@ function displayCharts(results) {
             datasets: [{
                 label: 'Production Index',
                 data: productionIndexData,
-                borderColor: 'rgba(75, 192, 192, 1)',
-                borderWidth: 1,
+                borderColor: 'rgba(0, 123, 255, 1)',
+                borderWidth: 3,
+                pointBackgroundColor: 'rgba(0, 123, 255, 1)',
+                pointBorderWidth: 2,
                 fill: false
             }]
         },
         options: {
             scales: {
                 x: {
+                    ticks: {
+                        color: 'rgba(240, 240, 240, 0.8)'
+                    },
                     title: {
                         display: true,
-                        text: 'Entry'
+                        text: 'Entry',
+                        color: 'rgba(240, 240, 240, 0.8)'
                     }
                 },
                 y: {
+                    ticks: {
+                        color: 'rgba(240, 240, 240, 0.8)'
+                    },
                     beginAtZero: true,
                     title: {
                         display: true,
-                        text: 'Productivity Index'
+                        text: 'Productivity Index',
+                        color: 'rgba(240, 240, 240, 0.8)'
                     }
                 }
             }
@@ -229,24 +239,34 @@ function displayCharts(results) {
             datasets: [{
                 label: 'Cost per Byte',
                 data: costPerByteData,
-                borderColor: 'rgba(153, 102, 255, 1)',
-                borderWidth: 1,
+                borderColor: 'rgba(255, 159, 64, 1)',
+                borderWidth: 3,
+                pointBackgroundColor: 'rgba(255, 159, 64, 1)',
+                pointBorderWidth: 2,
                 fill: false
             }]
         },
         options: {
             scales: {
                 x: {
+                    ticks: {
+                        color: 'rgba(240, 240, 240, 0.8)'
+                    },
                     title: {
                         display: true,
-                        text: 'Entry'
+                        text: 'Entry',
+                        color: 'rgba(240, 240, 240, 0.8)'
                     }
                 },
                 y: {
+                    ticks: {
+                        color: 'rgba(240, 240, 240, 0.8)'
+                    },
                     beginAtZero: true,
                     title: {
                         display: true,
-                        text: 'Cost per Byte (R$)'
+                        text: 'Cost per Byte (R$)',
+                        color: 'rgba(240, 240, 240, 0.8)'
                     }
                 }
             }
@@ -260,25 +280,36 @@ function displayCharts(results) {
             datasets: [{
                 label: 'Cost vs Productivity',
                 data: results.map(row => ({ x: parseFloat(row['totalCostPerByte']), y: parseFloat(row['dataProductivityIndex']) })),
-                borderColor: 'rgba(255, 99, 132, 1)',
-                borderWidth: 1,
+                borderColor: 'rgba(40, 167, 69, 1)',
+                borderWidth: 3,
+                pointBackgroundColor: 'rgba(40, 167, 69, 1)',
+                pointBorderWidth: 2,
                 backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                fill: false
             }]
         },
         options: {
             scales: {
                 x: {
+                    ticks: {
+                        color: 'rgba(240, 240, 240, 0.8)'
+                    },
                     beginAtZero: true,
                     title: {
                         display: true,
-                        text: 'Cost per byte (R$)'
+                        text: 'Cost per byte (R$)',
+                        color: 'rgba(240, 240, 240, 0.8)'
                     }
                 },
                 y: {
+                    ticks: {
+                        color: 'rgba(240, 240, 240, 0.8)'
+                    },
                     beginAtZero: true,
                     title: {
                         display: true,
-                        text: 'Productivity Index'
+                        text: 'Productivity Index',
+                        color: 'rgba(240, 240, 240, 0.8)'
                     }
                 }
             }
